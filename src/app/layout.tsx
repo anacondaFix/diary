@@ -1,7 +1,12 @@
-import { ClerkProvider, Show, UserButton } from "@clerk/nextjs";
+import {
+  ClerkProvider,
+  Show,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+} from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { AuthModal } from "@/components/auth-modal";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,7 +34,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ClerkProvider>
           <header className="flex h-16 items-center justify-end gap-4 px-6">
             <Show when="signed-out">
-              <AuthModal />
+              <SignInButton mode="modal" />
+              <SignUpButton mode="modal" />
             </Show>
             <Show when="signed-in">
               <UserButton />
