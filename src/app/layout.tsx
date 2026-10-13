@@ -7,6 +7,8 @@ import {
 } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
+import { Suspense } from "react";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -33,13 +35,18 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <ClerkProvider>
           <header className="flex h-16 items-center justify-end gap-4 px-6">
-            <Show when="signed-out">
-              <SignInButton mode="modal" />
-              <SignUpButton mode="modal" />
-            </Show>
-            <Show when="signed-in">
-              <UserButton />
-            </Show>
+            <Suspense>
+              <Show when="signed-out">
+                <SignInButton mode="modal" />
+                <SignUpButton mode="modal" />
+              </Show>
+              <Show when="signed-in">
+                <Link href="/dashboard" className="text-sm font-medium">
+                  Dashboard
+                </Link>
+                <UserButton />
+              </Show>
+            </Suspense>
           </header>
           {children}
         </ClerkProvider>
