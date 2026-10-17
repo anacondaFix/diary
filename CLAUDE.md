@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Before generating any code, ALWAYS first read the relevant documentation file(s) in the `/docs` directory.** Every piece of code Claude Code writes must follow the conventions and requirements those docs describe. If no file in `/docs` covers the task, say so before proceeding. Current docs:
 
 - `docs/ui.md` — UI conventions
+- `docs/data-fetching.md` — data fetching (server components only, `/data` helpers, Drizzle only, per-user data isolation)
 
 ## Commands
 
