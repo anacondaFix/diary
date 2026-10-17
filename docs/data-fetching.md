@@ -70,6 +70,10 @@ export async function getWorkoutById(workoutId: number) {
 }
 ```
 
+## Example: dates with workouts
+
+`getWorkoutDates()` in `src/data/workouts.ts` returns the distinct `"yyyy-MM-dd"` days on which the current user logged a workout (scoped by `userId`). The dashboard page calls it and passes the result to the date picker, which highlights those days (see `docs/ui.md`).
+
 ## Checklist
 
 Before finishing any data-related change, confirm:

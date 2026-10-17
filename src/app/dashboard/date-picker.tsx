@@ -1,6 +1,6 @@
 "use client";
 
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -10,9 +10,18 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 // Only changes the `?date=` search param; the server page does the fetching.
-export function DatePicker({ date }: { date: Date }) {
+// `workoutDates` are "yyyy-MM-dd" strings for days with a logged workout;
+// they are highlighted in green.
+export function DatePicker({
+  date,
+  workoutDates,
+}: {
+  date: Date;
+  workoutDates: string[];
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const workoutDays = workoutDates.map((d) => parse(d, "yyyy-MM-dd", new Date()));
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -27,6 +36,11 @@ export function DatePicker({ date }: { date: Date }) {
           mode="single"
           selected={date}
           defaultMonth={date}
+          modifiers={{ workout: workoutDays }}
+          modifiersClassNames={{
+            workout:
+              "bg-green-200! text-green-900 dark:bg-green-800/70! dark:text-green-50",
+          }}
           onSelect={(next) => {
             if (next) {
               setOpen(false);

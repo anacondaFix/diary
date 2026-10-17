@@ -30,6 +30,26 @@ Unauthenticated visitors who try to access protected data (e.g. `/dashboard`) ar
 - Offer a way to sign in, using the existing Clerk sign-in button that opens in a modal (as on the landing page), wrapped in a shadcn/ui `Button`.
 - Use Tailwind utility classes for layout and spacing only (e.g. `flex min-h-screen items-center justify-center`). The dashboard background color does not apply to this page.
 
+## Dashboard calendar: highlight workout days
+
+In the dashboard date picker (`src/app/dashboard/date-picker.tsx`), every date that has at least one recorded workout must be highlighted in green.
+
+- The server page gets the dates from `getWorkoutDates()` in `src/data/workouts.ts` (see `docs/data-fetching.md`) and passes them to `DatePicker` as a `workoutDates: string[]` prop of `"yyyy-MM-dd"` strings. The client component must not fetch them.
+- Inside `DatePicker`, convert them with date-fns `parse(d, "yyyy-MM-dd", new Date())` and pass them to the shadcn/ui `Calendar` via react-day-picker's `modifiers` and `modifiersClassNames` props. Do not edit `src/components/ui/calendar.tsx`.
+- Use the green classes `bg-green-200! text-green-900 dark:bg-green-800/70! dark:text-green-50`. The `!` (important) is required so the green wins over the "today" `bg-muted` style.
+- The currently selected date keeps the primary selected style, even if it has a workout.
+
+```tsx
+<Calendar
+  mode="single"
+  selected={date}
+  modifiers={{ workout: workoutDays }}
+  modifiersClassNames={{
+    workout: "bg-green-200! text-green-900 dark:bg-green-800/70! dark:text-green-50",
+  }}
+/>
+```
+
 ## Date formatting
 
 All date formatting must be done with [date-fns](https://date-fns.org/). Do not use `Intl.DateTimeFormat`, `toLocaleDateString`, `moment`, `dayjs`, or manual string building.

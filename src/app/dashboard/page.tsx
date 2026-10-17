@@ -9,8 +9,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getWorkoutsForDate } from "@/data/workouts";
+import {
+  getAvailableExercises,
+  getWorkoutDates,
+  getWorkoutsForDate,
+} from "@/data/workouts";
 
+import { AddWorkoutDialog } from "./add-workout-dialog";
 import { DatePicker } from "./date-picker";
 
 export default async function DashboardPage({
@@ -25,14 +30,18 @@ export default async function DashboardPage({
       : undefined;
   const date = parsed && isValid(parsed) ? parsed : new Date();
 
-  const workouts = await getWorkoutsForDate(date);
+  const [workouts, exercises, workoutDates] = await Promise.all([
+    getWorkoutsForDate(date),
+    getAvailableExercises(),
+    getWorkoutDates(),
+  ]);
 
   return (
     <div className="flex min-h-screen flex-1 flex-col bg-[#b8e2f4]">
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-        <DatePicker date={date} />
+        <DatePicker date={date} workoutDates={workoutDates} />
       </div>
 
       <section className="flex flex-col gap-4">
@@ -41,9 +50,12 @@ export default async function DashboardPage({
         </h2>
 
         {workouts.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            No workouts logged for this day.
-          </p>
+          <>
+            <p className="text-sm text-muted-foreground">
+              No workouts logged for this day.
+            </p>
+            <AddWorkoutDialog date={date} exercises={exercises} />
+          </>
         )}
 
         {workouts.map((workout) => (
