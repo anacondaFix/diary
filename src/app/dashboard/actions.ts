@@ -35,8 +35,9 @@ export async function addWorkout(input: AddWorkoutInput): Promise<AddWorkoutResu
 
   const exercises: Parameters<typeof createWorkout>[0]["exercises"] = [];
   for (const e of input.exercises) {
-    const exerciseId = Number(e.exerciseId);
-    if (!Number.isInteger(exerciseId)) {
+    // Number("") is 0, so an unselected row must be rejected explicitly.
+    const exerciseId = e.exerciseId.trim() === "" ? NaN : Number(e.exerciseId);
+    if (!Number.isInteger(exerciseId) || exerciseId <= 0) {
       return { ok: false, error: "Choose an exercise for every row." };
     }
     const sets: (typeof exercises)[number]["sets"] = [];
