@@ -135,3 +135,79 @@ export async function createWorkout(input: NewWorkoutInput) {
 
   return workout.id;
 }
+
+// Confirms every exercise id is a built-in or belongs to the current user.
+async function assertExercisesAllowed(userId: string, input: NewWorkoutInput["exercises"]) {
+  const exerciseIds = [...new Set(input.map((e) => e.exerciseId))];
+  if (exerciseIds.length === 0) return;
+  const allowed = await db
+    .select({ id: exercises.id })
+    .from(exercises)
+    .where(
+      and(
+        inArray(exercises.id, exerciseIds),
+        or(isNull(exercises.userId), eq(exercises.userId, userId)),
+      ),
+    );
+  if (allowed.length !== exerciseIds.length) throw new Error("Unknown exercise");
+}
+
+// Updates a workout the current user owns, replacing its exercises and sets.
+// Returns false when no such workout exists for this user. The neon-http
+// driver has no transactions, so everything is validated before the old
+// children are deleted. `performedAt` is left unchanged.
+export async function updateWorkout(
+  workoutId: number,
+  input: Omit<NewWorkoutInput, "performedAt">,
+) {
+  const { userId } = await auth();
+  if (!userId) redirect("/login-required");
+
+  await assertExercisesAllowed(userId, input.exercises);
+
+  const updated = await db
+    .update(workouts)
+    .set({ name: input.name, notes: input.notes, updatedAt: new Date() })
+    .where(and(eq(workouts.id, workoutId), eq(workouts.userId, userId)))
+    .returning({ id: workouts.id });
+  if (updated.length === 0) return false;
+
+  await db.delete(workoutExercises).where(eq(workoutExercises.workoutId, workoutId));
+
+  if (input.exercises.length > 0) {
+    const rows = await db
+      .insert(workoutExercises)
+      .values(
+        input.exercises.map((e, index) => ({
+          workoutId,
+          exerciseId: e.exerciseId,
+          position: index + 1,
+        })),
+      )
+      .returning({ id: workoutExercises.id, position: workoutExercises.position });
+
+    const setRows = rows.flatMap((row) =>
+      input.exercises[row.position - 1].sets.map((set, i) => ({
+        workoutExerciseId: row.id,
+        setNumber: i + 1,
+        reps: set.reps,
+        weight: set.weight === null ? null : String(set.weight),
+      })),
+    );
+    if (setRows.length > 0) await db.insert(sets).values(setRows);
+  }
+
+  return true;
+}
+
+// Deletes a workout the current user owns (exercises and sets cascade).
+export async function deleteWorkout(workoutId: number) {
+  const { userId } = await auth();
+  if (!userId) redirect("/login-required");
+
+  const deleted = await db
+    .delete(workouts)
+    .where(and(eq(workouts.id, workoutId), eq(workouts.userId, userId)))
+    .returning({ id: workouts.id });
+  return deleted.length > 0;
+}

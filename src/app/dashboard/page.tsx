@@ -16,6 +16,7 @@ import {
 } from "@/data/workouts";
 
 import { AddWorkoutDialog } from "./add-workout-dialog";
+import { EditWorkoutDialog } from "./edit-workout-dialog";
 import { DatePicker } from "./date-picker";
 
 export default async function DashboardPage({
@@ -84,6 +85,7 @@ export default async function DashboardPage({
                   </span>
                 </div>
               ))}
+              <EditWorkoutDialog workout={workout} exercises={exercises} />
             </CardContent>
           </Card>
         ))}
